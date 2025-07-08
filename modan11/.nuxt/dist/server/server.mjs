@@ -1,0 +1,1 @@
+export { default } from "file:///Users/honamiyuusuke/coachtech/laravel/modan1/modan11/node_modules/@nuxt/vite-builder/dist/runtime/vite-node.mjs"

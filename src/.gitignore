@@ -14,3 +14,13 @@ yarn-error.log
 /.idea
 /.vscode
 docker/mysql/data/
+# Laravel関連の除外
+/storage/logs
+/bootstrap/cache
+# Mac固有ファイルの除外
+.DS_Store
+# 明示的に入れておく
+modan11/node_modules/
+modan11/.nuxt/
+.vscode/
+

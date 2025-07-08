@@ -3,29 +3,51 @@
     class="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center"
   >
     <img src="/logo.png" alt="Logo" class="absolute top-6 left-6 w-36" />
+
     <form
       class="bg-white text-black rounded-lg shadow-md w-96 p-8 space-y-4"
       @submit.prevent="register"
     >
       <h2 class="text-center font-bold text-lg">新規登録</h2>
-      <input
-        v-model="name"
-        type="text"
-        placeholder="ユーザー ネーム"
-        class="input-style"
-      />
-      <input
-        v-model="email"
-        type="email"
-        placeholder="メールアドレス"
-        class="input-style"
-      />
-      <input
-        v-model="password"
-        type="password"
-        placeholder="パスワード"
-        class="input-style"
-      />
+
+      <!-- 名前 -->
+      <div>
+        <input
+          v-model="name"
+          type="text"
+          placeholder="ユーザー ネーム"
+          class="input-style"
+        />
+        <p v-if="errors.name" class="text-red-500 text-sm mt-1">
+          {{ errors.name }}
+        </p>
+      </div>
+
+      <!-- メールアドレス -->
+      <div>
+        <input
+          v-model="email"
+          type="text"
+          placeholder="メールアドレス"
+          class="input-style"
+        />
+        <p v-if="errors.email" class="text-red-500 text-sm mt-1">
+          {{ errors.email }}
+        </p>
+      </div>
+
+      <!-- パスワード -->
+      <div>
+        <input
+          v-model="password"
+          type="password"
+          placeholder="パスワード"
+          class="input-style"
+        />
+        <p v-if="errors.password" class="text-red-500 text-sm mt-1">
+          {{ errors.password }}
+        </p>
+      </div>
 
       <button
         type="submit"
@@ -33,9 +55,6 @@
       >
         登録
       </button>
-      <p v-if="error" class="text-red-500 text-sm mt-2 whitespace-pre-line">
-        {{ error }}
-      </p>
     </form>
 
     <div class="absolute top-6 right-6 space-x-4 text-sm">
@@ -45,48 +64,56 @@
   </div>
 </template>
 
+<script setup lang="ts">
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+
+const name = ref("");
+const email = ref("");
+const password = ref("");
+const errors = ref<{ name?: string; email?: string; password?: string }>({});
+const router = useRouter();
+
+const register = async () => {
+  errors.value = {};
+
+  try {
+    await $fetch("http://localhost/sanctum/csrf-cookie", {
+      credentials: "include",
+    });
+
+    await $fetch("http://localhost/api/register", {
+      method: "POST",
+      body: {
+        name: name.value,
+        email: email.value,
+        password: password.value,
+      },
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      throwHttpErrors: true,
+    });
+
+    router.push("/login");
+  } catch (err: any) {
+    // Laravelバリデーションエラーの取得
+    const resErrors = err?.data?.errors;
+
+    if (err?.status === 422 && resErrors) {
+      errors.value = {
+        name: resErrors.name?.[0],
+        email: resErrors.email?.[0],
+        password: resErrors.password?.[0],
+      };
+    }
+  }
+};
+</script>
+
 <style scoped>
 .input-style {
   @apply w-full border rounded px-4 py-2;
 }
 </style>
-
-<script setup lang="ts">
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import axios from "axios";
-
-const name = ref("");
-const email = ref("");
-const password = ref("");
-const password_confirmation = ref("");
-const error = ref("");
-
-const router = useRouter();
-
-const register = async () => {
-  error.value = "";
-  try {
-    await axios.post(
-      "http://localhost/api/register", // Laravel側のエンドポイント
-      {
-        name: name.value,
-        email: email.value,
-        password: password.value,
-        password_confirmation: password_confirmation.value,
-      },
-      {
-        withCredentials: true, // Laravel Sanctum を使う場合は必須
-      }
-    );
-
-    router.push("/login");
-  } catch (err: any) {
-    if (err.response?.data?.errors) {
-      error.value = Object.values(err.response.data.errors).flat().join("\n");
-    } else {
-      error.value = "登録に失敗しました";
-    }
-  }
-};
-</script>

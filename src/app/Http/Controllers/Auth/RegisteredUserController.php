@@ -12,11 +12,21 @@ class RegisteredUserController extends Controller
 {
     public function store(Request $request)
     {
+        $messages = [
+            'name.required' => 'ユーザーネームは必須です。',
+            'name.max' => 'ユーザーネームは20文字以内で入力してください。',
+            'email.required' => 'メールアドレスは必須です。',
+            'email.email' => '正しいメールアドレス形式で入力してください。',
+            'email.unique' => 'このメールアドレスはすでに登録されています。',
+            'password.required' => 'パスワードは必須です。',
+            'password.min' => 'パスワードは6文字以上で入力してください。',
+        ];
+
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:20'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', Rules\Password::defaults()],
-        ]);
+            'password' => ['required', 'string', 'min:6'],
+        ], $messages);
 
         $user = User::create([
             'name' => $validated['name'],

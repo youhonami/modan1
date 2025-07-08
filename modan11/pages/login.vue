@@ -2,8 +2,10 @@
   <div
     class="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center"
   >
-    <img src="/logo.png" alt="Logo" class="absolute top-6 left-6 w-36" />
+    <!-- 共通ヘッダー -->
+    <AppHeader />
 
+    <!-- ログインフォーム -->
     <form
       class="bg-white text-black rounded-lg shadow-md w-96 p-8 space-y-4"
       @submit.prevent="login"
@@ -47,17 +49,13 @@
         {{ error }}
       </p>
     </form>
-
-    <div class="absolute top-6 right-6 space-x-4 text-sm">
-      <NuxtLink to="/register">新規登録</NuxtLink>
-      <NuxtLink to="/login">ログイン</NuxtLink>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import AppHeader from "@/components/AppHeader.vue";
 
 const router = useRouter();
 

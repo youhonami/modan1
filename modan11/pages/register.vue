@@ -2,8 +2,10 @@
   <div
     class="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center"
   >
-    <img src="/logo.png" alt="Logo" class="absolute top-6 left-6 w-36" />
+    <!-- 共通ヘッダー -->
+    <AppHeader />
 
+    <!-- 登録フォーム -->
     <form
       class="bg-white text-black rounded-lg shadow-md w-96 p-8 space-y-4"
       @submit.prevent="register"
@@ -56,17 +58,13 @@
         登録
       </button>
     </form>
-
-    <div class="absolute top-6 right-6 space-x-4 text-sm">
-      <NuxtLink to="/register">新規登録</NuxtLink>
-      <NuxtLink to="/login">ログイン</NuxtLink>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import AppHeader from "@/components/AppHeader.vue";
 
 const name = ref("");
 const email = ref("");
@@ -98,9 +96,7 @@ const register = async () => {
 
     router.push("/login");
   } catch (err: any) {
-    // Laravelバリデーションエラーの取得
     const resErrors = err?.data?.errors;
-
     if (err?.status === 422 && resErrors) {
       errors.value = {
         name: resErrors.name?.[0],

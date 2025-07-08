@@ -1,0 +1,30 @@
+# Node modules
+/node_modules
+modan11/node_modules
+
+# Nuxt build
+/.nuxt
+modan11/.nuxt
+
+# Laravel & PHP
+/vendor
+/storage/*.key
+/storage/logs
+/public/hot
+/public/storage
+.env
+.env.backup
+.phpunit.result.cache
+
+# Docker
+docker/mysql/data/
+docker-compose.override.yml
+
+# 開発環境設定
+/.vscode
+/.idea
+
+# OS固有
+.DS_Store
+npm-debug.log
+yarn-error.log

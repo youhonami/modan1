@@ -56,9 +56,9 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import AppHeader from "@/components/AppHeader.vue";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 const router = useRouter();
-
 const email = ref("");
 const password = ref("");
 const error = ref("");
@@ -69,37 +69,20 @@ const login = async () => {
   errors.value = {};
 
   try {
-    // CSRF クッキーを取得
-    await $fetch("http://localhost/sanctum/csrf-cookie", {
-      credentials: "include",
-    });
+    const auth = getAuth();
+    await signInWithEmailAndPassword(auth, email.value, password.value);
 
-    const xsrfToken = useCookie("XSRF-TOKEN").value;
-
-    // ログインAPIリクエスト
-    await $fetch("http://localhost/api/login", {
-      method: "POST",
-      body: {
-        email: email.value,
-        password: password.value,
-      },
-      credentials: "include",
-      headers: {
-        "X-XSRF-TOKEN": xsrfToken ?? "",
-        "Content-Type": "application/json",
-      },
-    });
-
+    // ログイン成功後にトップページへ
     router.push("/");
   } catch (err: any) {
-    if (err.response?.status === 422 && err.response._data.errors) {
-      const resErrors = err.response._data.errors;
-      errors.value = {
-        email: resErrors.email?.[0],
-        password: resErrors.password?.[0],
-      };
-    } else if (err.response?.status === 401) {
-      error.value = "メールアドレスまたはパスワードが間違っています。";
+    console.error(err); // ← ここを追加
+
+    if (err.code === "auth/invalid-email") {
+      errors.value.email = "メールアドレスの形式が正しくありません";
+    } else if (err.code === "auth/user-not-found") {
+      errors.value.email = "ユーザーが存在しません";
+    } else if (err.code === "auth/wrong-password") {
+      errors.value.password = "パスワードが間違っています";
     } else {
       error.value = "ログインに失敗しました";
     }

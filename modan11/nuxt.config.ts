@@ -4,4 +4,5 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ["@/assets/css/form.css"],
   modules: ["@nuxtjs/tailwindcss"],
+  plugins: ["~/plugins/firebase.ts"],
 });

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Tweet;
 use App\Models\User;
+use App\Models\Like;
 
 class TweetController extends Controller
 {
@@ -75,5 +76,33 @@ class TweetController extends Controller
         $tweet->delete();
 
         return response()->json(['message' => '削除成功'], 200);
+    }
+
+    public function like(Request $request, $id)
+    {
+        $request->validate([
+            'firebase_uid' => 'required|exists:users,firebase_uid',
+        ]);
+
+        $user = User::where('firebase_uid', $request->firebase_uid)->firstOrFail();
+
+        $tweet = Tweet::findOrFail($id);
+        $tweet->likes()->firstOrCreate(['user_id' => $user->id]);
+
+        return response()->json(['message' => 'いいねしました']);
+    }
+
+    public function unlike(Request $request, $id)
+    {
+        $request->validate([
+            'firebase_uid' => 'required|exists:users,firebase_uid',
+        ]);
+
+        $user = User::where('firebase_uid', $request->firebase_uid)->firstOrFail();
+
+        $tweet = Tweet::findOrFail($id);
+        $tweet->likes()->where('user_id', $user->id)->delete();
+
+        return response()->json(['message' => 'いいねを解除しました']);
     }
 }

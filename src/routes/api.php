@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Api\FirebaseAuthController;
+use App\Http\Controllers\TweetController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -30,3 +31,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::post('/firebase-register', [FirebaseAuthController::class, 'register']);
+//シェア機能
+Route::post('/tweets', [TweetController::class, 'store']);
+Route::get('/tweets', [TweetController::class, 'index']);

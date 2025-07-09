@@ -36,3 +36,8 @@ Route::post('/tweets', [TweetController::class, 'store']);
 Route::get('/tweets', [TweetController::class, 'index']);
 //シェアメッセージの削除
 Route::delete('/tweets/{id}', [TweetController::class, 'destroy']);
+//いいね機能
+Route::middleware('api')->group(function () {
+    Route::post('/tweets/{id}/like', [TweetController::class, 'like']);
+    Route::delete('/tweets/{id}/like', [TweetController::class, 'unlike']);
+});

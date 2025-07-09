@@ -53,7 +53,10 @@
         <p class="mb-2">{{ tweet.content }}</p>
         <div class="flex gap-4 text-sm items-center">
           <!-- ❤️ アイコン -->
-          <div class="flex items-center gap-1">
+          <div
+            class="flex items-center gap-1 cursor-pointer"
+            @click="toggleLike(tweet)"
+          >
             <img src="/images/heart.png" alt="いいね" class="w-4 h-4" />
             <span>{{ tweet.likes }}</span>
           </div>
@@ -194,5 +197,33 @@ const deleteTweet = async (id: number) => {
 const logout = async () => {
   await signOut(auth);
   router.push("/login");
+};
+
+const toggleLike = async (tweet: any) => {
+  if (!user.value) return;
+
+  try {
+    if (tweet.liked) {
+      await $fetch(`http://localhost/api/tweets/${tweet.id}/like`, {
+        method: "DELETE",
+        body: {
+          firebase_uid: user.value.uid,
+        },
+      });
+      tweet.likes -= 1;
+      tweet.liked = false;
+    } else {
+      await $fetch(`http://localhost/api/tweets/${tweet.id}/like`, {
+        method: "POST",
+        body: {
+          firebase_uid: user.value.uid,
+        },
+      });
+      tweet.likes += 1;
+      tweet.liked = true;
+    }
+  } catch (error) {
+    console.error("いいね処理に失敗しました", error);
+  }
 };
 </script>

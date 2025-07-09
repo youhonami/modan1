@@ -12,7 +12,7 @@ class UserSeeder extends Seeder
     {
         DB::table('users')->insert([
             [
-                'name' => 'ノラネコ',
+                'name' => 'ミーコ',
                 'email' => 'qqq@qqq.com',
                 'password' => Hash::make('qqqqqqqqqq'),
                 'firebase_uid' => 'poq2QfC3kFb0bMqypzeKC7JZugZ2',
@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'name' => 'マタタビ',
+                'name' => 'カンナ',
                 'email' => 'www@www.com',
                 'password' => Hash::make('wwwwwwwwww'),
                 'firebase_uid' => 'HK62S2WkpZYpGiftaetopjXuSKE2',
@@ -28,7 +28,7 @@ class UserSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'name' => 'ミーコ',
+                'name' => 'ナミ',
                 'email' => 'eee@eee.com',
                 'password' => Hash::make('eeeeeeeeee'),
                 'firebase_uid' => 'cmQwzEWwELgimLoWKQb5lETfK4R2',

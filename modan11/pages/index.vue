@@ -25,6 +25,12 @@
           rows="4"
           class="w-full rounded p-2 text-black"
         ></textarea>
+
+        <!-- バリデーションエラーメッセージ -->
+        <p v-if="errorMessage" class="text-red-500 text-sm mt-1">
+          {{ errorMessage }}
+        </p>
+
         <button
           @click="postMessage"
           class="mt-2 bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded-full"
@@ -85,8 +91,10 @@ const user = ref<{
 } | null>(null);
 
 const newMessage = ref("");
+const errorMessage = ref(""); // 🔁 バリデーション用メッセージ
 const tweets = ref<any[]>([]);
 
+// 認証ユーザー取得
 onMounted(() => {
   onAuthStateChanged(auth, (currentUser) => {
     if (currentUser) {
@@ -99,8 +107,21 @@ onMounted(() => {
   });
 });
 
+// 投稿処理
 const postMessage = async () => {
-  if (!newMessage.value.trim() || !user.value) return;
+  errorMessage.value = "";
+
+  if (!newMessage.value.trim()) {
+    errorMessage.value = "メッセージを入力してください。";
+    return;
+  }
+
+  if (newMessage.value.length > 120) {
+    errorMessage.value = "メッセージは120文字以内で入力してください。";
+    return;
+  }
+
+  if (!user.value) return;
 
   try {
     const response = await $fetch("http://localhost/api/tweets", {
@@ -113,7 +134,7 @@ const postMessage = async () => {
 
     tweets.value.unshift({
       id: response.id,
-      userName: response.user.name, // ← Laravel から返ってくる user.name を使う
+      userName: response.user.name,
       content: response.body,
       likes: 0,
       firebase_uid: response.user.firebase_uid,
@@ -125,6 +146,7 @@ const postMessage = async () => {
   }
 };
 
+// 投稿一覧取得
 onMounted(async () => {
   onAuthStateChanged(auth, async (currentUser) => {
     if (currentUser) {
@@ -141,7 +163,7 @@ onMounted(async () => {
           userName: tweet.user.name,
           content: tweet.body,
           likes: tweet.likes?.length ?? 0,
-          firebase_uid: tweet.user.firebase_uid, // 🔁 追加部分
+          firebase_uid: tweet.user.firebase_uid,
         }));
       } catch (error) {
         console.error("投稿取得に失敗しました", error);
@@ -150,6 +172,7 @@ onMounted(async () => {
   });
 });
 
+// 削除処理
 const deleteTweet = async (id: number) => {
   if (!user.value) return;
 
@@ -167,6 +190,7 @@ const deleteTweet = async (id: number) => {
   }
 };
 
+// ログアウト
 const logout = async () => {
   await signOut(auth);
   router.push("/login");

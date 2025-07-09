@@ -34,3 +34,5 @@ Route::post('/firebase-register', [FirebaseAuthController::class, 'register']);
 //シェア機能
 Route::post('/tweets', [TweetController::class, 'store']);
 Route::get('/tweets', [TweetController::class, 'index']);
+//シェアメッセージの削除
+Route::delete('/tweets/{id}', [TweetController::class, 'destroy']);

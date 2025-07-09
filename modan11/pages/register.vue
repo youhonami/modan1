@@ -65,6 +65,12 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import AppHeader from "@/components/AppHeader.vue";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  updateProfile,
+  signOut,
+} from "firebase/auth";
 
 const name = ref("");
 const email = ref("");
@@ -74,35 +80,49 @@ const router = useRouter();
 
 const register = async () => {
   errors.value = {};
+  const auth = getAuth();
 
   try {
-    await $fetch("http://localhost/sanctum/csrf-cookie", {
-      credentials: "include",
-    });
+    // Firebaseでユーザー登録
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email.value,
+      password.value
+    );
 
-    await $fetch("http://localhost/api/register", {
+    // displayName に名前を登録
+    if (auth.currentUser) {
+      await updateProfile(auth.currentUser, {
+        displayName: name.value,
+      });
+    }
+
+    // ✅ Laravel APIにユーザー登録
+    await $fetch("http://localhost/api/firebase-register", {
       method: "POST",
       body: {
         name: name.value,
         email: email.value,
-        password: password.value,
+        firebase_uid: userCredential.user.uid,
       },
-      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
-      throwHttpErrors: true,
     });
 
+    // Firebaseログイン状態を解除してログインページへ
+    await signOut(auth);
     router.push("/login");
   } catch (err: any) {
-    const resErrors = err?.data?.errors;
-    if (err?.status === 422 && resErrors) {
-      errors.value = {
-        name: resErrors.name?.[0],
-        email: resErrors.email?.[0],
-        password: resErrors.password?.[0],
-      };
+    console.error("登録エラー:", err);
+    if (err.code === "auth/invalid-email") {
+      errors.value.email = "メールアドレスの形式が正しくありません";
+    } else if (err.code === "auth/email-already-in-use") {
+      errors.value.email = "このメールアドレスは既に登録されています";
+    } else if (err.code === "auth/weak-password") {
+      errors.value.password = "パスワードは6文字以上にしてください";
+    } else {
+      errors.value.name = "登録に失敗しました";
     }
   }
 };

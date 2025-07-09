@@ -68,6 +68,23 @@ const login = async () => {
   error.value = "";
   errors.value = {};
 
+  // ▼ フロント側バリデーション追加
+  if (!email.value.trim()) {
+    errors.value.email = "メールアドレスは必須です";
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+    errors.value.email = "メールアドレスの形式で入力してください";
+  }
+
+  if (!password.value.trim()) {
+    errors.value.password = "パスワードは必須です";
+  } else if (password.value.length <= 5) {
+    errors.value.password = "パスワードが違います";
+  }
+
+  if (Object.keys(errors.value).length > 0) {
+    return; // バリデーションエラーがある場合はログイン処理中断
+  }
+
   try {
     const auth = getAuth();
     await signInWithEmailAndPassword(auth, email.value, password.value);
@@ -75,14 +92,15 @@ const login = async () => {
     // ログイン成功後にトップページへ
     router.push("/");
   } catch (err: any) {
-    console.error(err); // ← ここを追加
+    console.error(err);
 
+    // Firebaseエラー対応
     if (err.code === "auth/invalid-email") {
-      errors.value.email = "メールアドレスの形式が正しくありません";
+      errors.value.email = "メールアドレスの形式で入力してください";
     } else if (err.code === "auth/user-not-found") {
       errors.value.email = "ユーザーが存在しません";
     } else if (err.code === "auth/wrong-password") {
-      errors.value.password = "パスワードが間違っています";
+      errors.value.password = "パスワードが違います";
     } else {
       error.value = "ログインに失敗しました";
     }

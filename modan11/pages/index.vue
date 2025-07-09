@@ -2,13 +2,18 @@
   <div class="flex min-h-screen bg-gray-900 text-white">
     <!-- サイドバー -->
     <aside class="w-64 p-6 border-r border-gray-700">
-      <h1 class="text-3xl font-bold mb-8">SHARE</h1>
+      <div class="mb-8">
+        <img src="/logo.png" alt="ロゴ" class="h-10 w-auto" />
+      </div>
+
       <nav class="space-y-4">
         <NuxtLink to="/" class="flex items-center gap-2">
-          <span>🏠</span> ホーム
+          <img src="/images/home.png" alt="ホーム" class="h-5 w-5" />
+          ホーム
         </NuxtLink>
         <button @click="logout" class="flex items-center gap-2">
-          <span>🔓</span> ログアウト
+          <img src="/images/logout.png" alt="ログアウト" class="h-5 w-5" />
+          ログアウト
         </button>
       </nav>
 
@@ -33,7 +38,6 @@
     <main class="flex-1 p-6">
       <h2 class="text-xl font-bold mb-6">ホーム</h2>
 
-      <!-- 投稿リスト -->
       <div
         v-for="tweet in tweets"
         :key="tweet.id"
@@ -59,25 +63,16 @@ import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 const router = useRouter();
 const auth = getAuth();
 
-// ログイン中のユーザー情報を保持
 const user = ref<{
   uid: string;
   displayName: string | null;
   email: string | null;
 } | null>(null);
-const newMessage = ref("");
-const tweets = ref([
-  {
-    id: 1,
-    userName: "test",
-    content: "test message",
-    likes: 1,
-  },
-]);
 
-// Firebaseからログインユーザー情報を取得
+const newMessage = ref("");
+const tweets = ref<any[]>([]);
+
 onMounted(() => {
-  const auth = getAuth();
   onAuthStateChanged(auth, (currentUser) => {
     if (currentUser) {
       user.value = {
@@ -85,27 +80,64 @@ onMounted(() => {
         displayName: currentUser.displayName,
         email: currentUser.email,
       };
-    } else {
-      // 未ログインなら何もしない（middlewareで処理する）
     }
   });
 });
 
-// 投稿処理
-const postMessage = () => {
+const postMessage = async () => {
   if (!newMessage.value.trim() || !user.value) return;
 
-  tweets.value.unshift({
-    id: Date.now(),
-    userName: user.value.displayName || user.value.email || "Anonymous",
-    content: newMessage.value,
-    likes: 0,
-  });
+  try {
+    const response = await $fetch("http://localhost/api/tweets", {
+      method: "POST",
+      body: {
+        firebase_uid: user.value.uid, // 🔁 修正ポイント
+        body: newMessage.value,
+      },
+    });
 
-  newMessage.value = "";
+    tweets.value.unshift({
+      id: response.id,
+      userName: user.value.displayName || user.value.email || "Anonymous",
+      content: response.body,
+      likes: 0,
+    });
+
+    newMessage.value = "";
+  } catch (error) {
+    console.error("投稿に失敗しました", error);
+  }
 };
 
-// ログアウト処理
+onMounted(async () => {
+  onAuthStateChanged(auth, async (currentUser) => {
+    if (currentUser) {
+      user.value = {
+        uid: currentUser.uid,
+        displayName: currentUser.displayName,
+        email: currentUser.email,
+      };
+
+      // ✅ 投稿取得（firebase_uid → user情報取得はLaravel側で行う）
+      try {
+        const fetched = await $fetch("http://localhost/api/tweets");
+        tweets.value = fetched.map((tweet: any) => ({
+          id: tweet.id,
+          userName: tweet.user.name,
+          content: tweet.body,
+          likes: tweet.likes?.length ?? 0,
+        }));
+      } catch (error) {
+        console.error("投稿取得に失敗しました", error);
+      }
+    }
+  });
+});
+
+const deleteTweet = (id: number) => {
+  tweets.value = tweets.value.filter((t) => t.id !== id);
+};
+
 const logout = async () => {
   await signOut(auth);
   router.push("/login");

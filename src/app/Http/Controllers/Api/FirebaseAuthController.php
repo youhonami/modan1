@@ -11,18 +11,18 @@ class FirebaseAuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:20',
             'email' => 'required|email|unique:users',
             'firebase_uid' => 'required|string|unique:users,firebase_uid',
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'firebase_uid' => $request->firebase_uid,
-            'password' => bcrypt(uniqid()), // 仮パスワード（Firebaseで管理するので使わない）
+            'password' => bcrypt(uniqid()), // 仮パスワード
         ]);
 
-        return response()->json(['message' => 'User created'], 201);
+        return response()->json(['message' => 'User created', 'user' => $user], 201);
     }
 }

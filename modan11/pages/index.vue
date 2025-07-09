@@ -46,9 +46,24 @@
         <p class="font-bold">{{ tweet.userName }}</p>
         <p class="mb-2">{{ tweet.content }}</p>
         <div class="flex gap-4 text-sm items-center">
-          <span>❤️ {{ tweet.likes }}</span>
-          <button @click="deleteTweet(tweet.id)">❌</button>
-          <NuxtLink :to="`/tweet/${tweet.id}`">↪️</NuxtLink>
+          <!-- ❤️ アイコン -->
+          <div class="flex items-center gap-1">
+            <img src="/images/heart.png" alt="いいね" class="w-4 h-4" />
+            <span>{{ tweet.likes }}</span>
+          </div>
+
+          <!-- ❌ 削除 -->
+          <button
+            v-if="tweet.firebase_uid === user?.uid"
+            @click="deleteTweet(tweet.id)"
+          >
+            <img src="/images/cross.png" alt="削除" class="w-4 h-4" />
+          </button>
+
+          <!-- ↪️ 詳細ページ -->
+          <NuxtLink :to="`/tweet/${tweet.id}`">
+            <img src="/images/detail.png" alt="詳細" class="w-4 h-4" />
+          </NuxtLink>
         </div>
       </div>
     </main>
@@ -91,16 +106,17 @@ const postMessage = async () => {
     const response = await $fetch("http://localhost/api/tweets", {
       method: "POST",
       body: {
-        firebase_uid: user.value.uid, // 🔁 修正ポイント
+        firebase_uid: user.value.uid,
         body: newMessage.value,
       },
     });
 
     tweets.value.unshift({
       id: response.id,
-      userName: user.value.displayName || user.value.email || "Anonymous",
+      userName: response.user.name, // ← Laravel から返ってくる user.name を使う
       content: response.body,
       likes: 0,
+      firebase_uid: response.user.firebase_uid,
     });
 
     newMessage.value = "";
@@ -118,7 +134,6 @@ onMounted(async () => {
         email: currentUser.email,
       };
 
-      // ✅ 投稿取得（firebase_uid → user情報取得はLaravel側で行う）
       try {
         const fetched = await $fetch("http://localhost/api/tweets");
         tweets.value = fetched.map((tweet: any) => ({
@@ -126,6 +141,7 @@ onMounted(async () => {
           userName: tweet.user.name,
           content: tweet.body,
           likes: tweet.likes?.length ?? 0,
+          firebase_uid: tweet.user.firebase_uid, // 🔁 追加部分
         }));
       } catch (error) {
         console.error("投稿取得に失敗しました", error);
@@ -134,8 +150,21 @@ onMounted(async () => {
   });
 });
 
-const deleteTweet = (id: number) => {
-  tweets.value = tweets.value.filter((t) => t.id !== id);
+const deleteTweet = async (id: number) => {
+  if (!user.value) return;
+
+  try {
+    await $fetch(`http://localhost/api/tweets/${id}`, {
+      method: "DELETE",
+      body: {
+        firebase_uid: user.value.uid,
+      },
+    });
+
+    tweets.value = tweets.value.filter((t) => t.id !== id);
+  } catch (error) {
+    console.error("削除に失敗しました", error);
+  }
 };
 
 const logout = async () => {

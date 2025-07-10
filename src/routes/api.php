@@ -42,6 +42,8 @@ Route::middleware('api')->group(function () {
     Route::post('/tweets/{id}/like', [TweetController::class, 'like']);
     Route::delete('/tweets/{id}/like', [TweetController::class, 'unlike']);
 });
+Route::post('/tweets/{id}/like-toggle', [TweetController::class, 'toggleLike']);
+
 //コメント機能
 Route::get('/tweets/{id}', [TweetController::class, 'show']);
 Route::get('/tweets/{id}/comments', [CommentController::class, 'index']);

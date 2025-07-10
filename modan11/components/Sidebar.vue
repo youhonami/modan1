@@ -1,4 +1,3 @@
-<!-- components/Sidebar.vue -->
 <template>
   <aside class="w-64 p-6 border-r border-gray-700">
     <div class="mb-8">
@@ -48,6 +47,10 @@ const auth = getAuth();
 const newMessage = ref("");
 const errorMessage = ref("");
 
+const emit = defineEmits<{
+  (e: "onPost", tweet: any): void;
+}>();
+
 const logout = async () => {
   await signOut(auth);
   router.push("/login");
@@ -79,7 +82,15 @@ const postMessage = async () => {
     });
 
     newMessage.value = "";
-    // オプション：emitで親に通知したければここで emit を使って渡せます
+
+    emit("onPost", {
+      id: response.id,
+      userName: response.user.name,
+      content: response.body,
+      likes: 0,
+      liked: false,
+      firebase_uid: response.user.firebase_uid,
+    });
   } catch (error) {
     console.error("投稿に失敗しました", error);
   }

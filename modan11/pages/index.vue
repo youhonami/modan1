@@ -7,41 +7,15 @@
     <main class="flex-1 p-6">
       <h2 class="text-xl font-bold mb-6">ホーム</h2>
 
-      <div
+      <TweetCard
         v-for="tweet in tweets"
         :key="tweet.id"
-        class="border-b border-gray-700 py-4"
-      >
-        <p class="font-bold">{{ tweet.userName }}</p>
-        <p class="mb-2">{{ tweet.content }}</p>
-        <div class="flex gap-4 text-sm items-center">
-          <!-- ❤️ いいね -->
-          <div
-            class="flex items-center gap-1 cursor-pointer"
-            @click="toggleLike(tweet)"
-          >
-            <img
-              src="/images/heart.png"
-              class="w-4 h-4"
-              :class="{ 'opacity-50': !tweet?.liked }"
-            />
-            <span>{{ tweet.likes }}</span>
-          </div>
-
-          <!-- ❌ 削除 -->
-          <button
-            v-if="tweet.firebase_uid === user?.uid"
-            @click="deleteTweet(tweet.id)"
-          >
-            <img src="/images/cross.png" alt="削除" class="w-4 h-4" />
-          </button>
-
-          <!-- ↪️ 詳細ページ -->
-          <NuxtLink :to="`/tweet/${tweet.id}`">
-            <img src="/images/detail.png" alt="詳細" class="w-4 h-4" />
-          </NuxtLink>
-        </div>
-      </div>
+        :tweet="tweet"
+        :user="user"
+        showDetailLink
+        @toggle-like="() => toggleLike(tweet)"
+        @delete="() => deleteTweet(tweet.id)"
+      />
     </main>
   </div>
 </template>

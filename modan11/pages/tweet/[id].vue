@@ -7,31 +7,20 @@
     <main class="flex-1 p-6">
       <h2 class="text-lg font-bold mb-4">コメント</h2>
 
-      <!-- 投稿情報 -->
-      <div class="border border-gray-600 p-4 rounded mb-4">
-        <div class="flex items-center gap-2 mb-2">
-          <p class="font-bold">{{ tweet?.user.name }}</p>
-          <div
-            class="flex items-center gap-1 cursor-pointer"
-            @click="toggleLike"
-          >
-            <img
-              src="/images/heart.png"
-              class="w-4 h-4"
-              :class="{ 'opacity-50': !tweet?.liked }"
-            />
-            <span>{{ tweet?.likes }}</span>
-          </div>
-
-          <button
-            v-if="tweet?.user.firebase_uid === user?.uid"
-            @click="deleteTweet"
-          >
-            <img src="/images/cross.png" class="w-4 h-4" />
-          </button>
-        </div>
-        <p>{{ tweet?.body }}</p>
-      </div>
+      <TweetCard
+        v-if="tweet"
+        :tweet="{
+          id: tweet.id,
+          userName: tweet.user.name,
+          content: tweet.body,
+          likes: tweet.likes,
+          liked: tweet.liked,
+          firebase_uid: tweet.user.firebase_uid,
+        }"
+        :user="user"
+        @toggle-like="toggleLike"
+        @delete="deleteTweet"
+      />
 
       <!-- コメント一覧 -->
       <div class="border-t border-gray-600 mb-2 py-2 font-bold">コメント</div>

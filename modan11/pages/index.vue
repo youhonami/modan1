@@ -20,7 +20,11 @@
             class="flex items-center gap-1 cursor-pointer"
             @click="toggleLike(tweet)"
           >
-            <img src="/images/heart.png" alt="いいね" class="w-4 h-4" />
+            <img
+              src="/images/heart.png"
+              class="w-4 h-4"
+              :class="{ 'opacity-50': !tweet?.liked }"
+            />
             <span>{{ tweet.likes }}</span>
           </div>
 

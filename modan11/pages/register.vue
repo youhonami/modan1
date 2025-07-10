@@ -55,7 +55,7 @@
         type="submit"
         class="w-full bg-purple-700 text-white rounded-full py-2 hover:bg-purple-800 transition"
       >
-        登録
+        新規登録
       </button>
     </form>
   </div>

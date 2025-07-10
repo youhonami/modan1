@@ -1,44 +1,7 @@
 <template>
   <div class="flex min-h-screen bg-gray-900 text-white">
     <!-- サイドバー -->
-    <aside class="w-64 p-6 border-r border-gray-700">
-      <div class="mb-8">
-        <img src="/logo.png" alt="ロゴ" class="h-10 w-auto" />
-      </div>
-
-      <nav class="space-y-4">
-        <NuxtLink to="/" class="flex items-center gap-2">
-          <img src="/images/home.png" alt="ホーム" class="h-5 w-5" />
-          ホーム
-        </NuxtLink>
-        <button @click="logout" class="flex items-center gap-2">
-          <img src="/images/logout.png" alt="ログアウト" class="h-5 w-5" />
-          ログアウト
-        </button>
-      </nav>
-
-      <!-- 投稿フォーム -->
-      <div class="mt-8">
-        <p class="mb-2">シェア</p>
-        <textarea
-          v-model="newMessage"
-          rows="4"
-          class="w-full rounded p-2 text-black"
-        ></textarea>
-
-        <!-- バリデーションエラーメッセージ -->
-        <p v-if="errorMessage" class="text-red-500 text-sm mt-1">
-          {{ errorMessage }}
-        </p>
-
-        <button
-          @click="postMessage"
-          class="mt-2 bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded-full"
-        >
-          シェアする
-        </button>
-      </div>
-    </aside>
+    <Sidebar :onPost="handleNewPost" />
 
     <!-- メインコンテンツ -->
     <main class="flex-1 p-6">
@@ -57,7 +20,13 @@
             class="flex items-center gap-1 cursor-pointer"
             @click="toggleLike(tweet)"
           >
-            <img src="/images/heart.png" alt="いいね" class="w-4 h-4" />
+            <img
+              :src="
+                tweet.liked ? '/images/heart-filled.png' : '/images/heart.png'
+              "
+              alt="いいね"
+              class="w-4 h-4"
+            />
             <span>{{ tweet.likes }}</span>
           </div>
 
@@ -83,6 +52,7 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
+import Sidebar from "@/components/Sidebar.vue";
 
 const router = useRouter();
 const auth = getAuth();
@@ -93,64 +63,15 @@ const user = ref<{
   email: string | null;
 } | null>(null);
 
-const newMessage = ref("");
-const errorMessage = ref(""); // 🔁 バリデーション用メッセージ
 const tweets = ref<any[]>([]);
+
+// 新規投稿を受け取る関数
+const handleNewPost = (tweet: any) => {
+  tweets.value.unshift(tweet);
+};
 
 // 認証ユーザー取得
 onMounted(() => {
-  onAuthStateChanged(auth, (currentUser) => {
-    if (currentUser) {
-      user.value = {
-        uid: currentUser.uid,
-        displayName: currentUser.displayName,
-        email: currentUser.email,
-      };
-    }
-  });
-});
-
-// 投稿処理
-const postMessage = async () => {
-  errorMessage.value = "";
-
-  if (!newMessage.value.trim()) {
-    errorMessage.value = "メッセージを入力してください。";
-    return;
-  }
-
-  if (newMessage.value.length > 120) {
-    errorMessage.value = "メッセージは120文字以内で入力してください。";
-    return;
-  }
-
-  if (!user.value) return;
-
-  try {
-    const response = await $fetch("http://localhost/api/tweets", {
-      method: "POST",
-      body: {
-        firebase_uid: user.value.uid,
-        body: newMessage.value,
-      },
-    });
-
-    tweets.value.unshift({
-      id: response.id,
-      userName: response.user.name,
-      content: response.body,
-      likes: 0,
-      firebase_uid: response.user.firebase_uid,
-    });
-
-    newMessage.value = "";
-  } catch (error) {
-    console.error("投稿に失敗しました", error);
-  }
-};
-
-// 投稿一覧取得
-onMounted(async () => {
   onAuthStateChanged(auth, async (currentUser) => {
     if (currentUser) {
       user.value = {
@@ -166,6 +87,9 @@ onMounted(async () => {
           userName: tweet.user.name,
           content: tweet.body,
           likes: tweet.likes?.length ?? 0,
+          liked: tweet.likes?.some(
+            (like: any) => like.firebase_uid === user.value?.uid
+          ),
           firebase_uid: tweet.user.firebase_uid,
         }));
       } catch (error) {
@@ -191,12 +115,6 @@ const deleteTweet = async (id: number) => {
   } catch (error) {
     console.error("削除に失敗しました", error);
   }
-};
-
-// ログアウト
-const logout = async () => {
-  await signOut(auth);
-  router.push("/login");
 };
 
 const toggleLike = async (tweet: any) => {

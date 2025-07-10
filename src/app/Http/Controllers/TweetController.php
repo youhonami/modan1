@@ -105,4 +105,11 @@ class TweetController extends Controller
 
         return response()->json(['message' => 'いいねを解除しました']);
     }
+
+    public function show($id)
+    {
+        $tweet = Tweet::with('user', 'likes')->findOrFail($id);
+
+        return response()->json($tweet);
+    }
 }

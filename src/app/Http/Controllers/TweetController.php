@@ -78,33 +78,35 @@ class TweetController extends Controller
         return response()->json(['message' => '削除成功'], 200);
     }
 
-    public function like(Request $request, $id)
+    public function toggleLike(Request $request, $id)
     {
         $request->validate([
             'firebase_uid' => 'required|exists:users,firebase_uid',
         ]);
 
         $user = User::where('firebase_uid', $request->firebase_uid)->firstOrFail();
-
         $tweet = Tweet::findOrFail($id);
-        $tweet->likes()->firstOrCreate(['user_id' => $user->id]);
 
-        return response()->json(['message' => 'いいねしました']);
-    }
+        $like = $tweet->likes()->where('user_id', $user->id)->first();
 
-    public function unlike(Request $request, $id)
-    {
-        $request->validate([
-            'firebase_uid' => 'required|exists:users,firebase_uid',
+        if ($like) {
+            // すでにいいねしている → 削除
+            $like->delete();
+            $liked = false;
+        } else {
+            // まだいいねしてない → 登録
+            $tweet->likes()->create(['user_id' => $user->id]);
+            $liked = true;
+        }
+
+        return response()->json([
+            'message' => $liked ? 'いいねしました' : 'いいねを解除しました',
+            'likes_count' => $tweet->likes()->count(),
+            'liked' => $liked,
         ]);
-
-        $user = User::where('firebase_uid', $request->firebase_uid)->firstOrFail();
-
-        $tweet = Tweet::findOrFail($id);
-        $tweet->likes()->where('user_id', $user->id)->delete();
-
-        return response()->json(['message' => 'いいねを解除しました']);
     }
+
+
 
     public function show($id)
     {

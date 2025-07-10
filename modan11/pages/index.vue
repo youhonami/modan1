@@ -1,7 +1,7 @@
 <template>
   <div class="flex min-h-screen bg-gray-900 text-white">
     <!-- サイドバー -->
-    <Sidebar :onPost="handleNewPost" />
+    <Sidebar @onPost="handleNewPost" />
 
     <!-- メインコンテンツ -->
     <main class="flex-1 p-6">
@@ -15,18 +15,12 @@
         <p class="font-bold">{{ tweet.userName }}</p>
         <p class="mb-2">{{ tweet.content }}</p>
         <div class="flex gap-4 text-sm items-center">
-          <!-- ❤️ アイコン -->
+          <!-- ❤️ いいね -->
           <div
             class="flex items-center gap-1 cursor-pointer"
             @click="toggleLike(tweet)"
           >
-            <img
-              :src="
-                tweet.liked ? '/images/heart-filled.png' : '/images/heart.png'
-              "
-              alt="いいね"
-              class="w-4 h-4"
-            />
+            <img src="/images/heart.png" alt="いいね" class="w-4 h-4" />
             <span>{{ tweet.likes }}</span>
           </div>
 
@@ -51,7 +45,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import Sidebar from "@/components/Sidebar.vue";
 
 const router = useRouter();
@@ -65,12 +59,34 @@ const user = ref<{
 
 const tweets = ref<any[]>([]);
 
-// 新規投稿を受け取る関数
 const handleNewPost = (tweet: any) => {
   tweets.value.unshift(tweet);
 };
 
-// 認証ユーザー取得
+// 投稿取得
+const fetchTweets = async () => {
+  try {
+    const fetched = await $fetch("http://localhost/api/tweets");
+
+    tweets.value = fetched.map((tweet: any) => {
+      const liked = tweet.likes?.some(
+        (like: any) => like.firebase_uid === user.value?.uid
+      );
+      return {
+        id: tweet.id,
+        userName: tweet.user.name,
+        content: tweet.body,
+        likes: tweet.likes?.length ?? 0,
+        liked,
+        firebase_uid: tweet.user.firebase_uid,
+      };
+    });
+  } catch (error) {
+    console.error("投稿取得に失敗しました", error);
+  }
+};
+
+// 初期処理
 onMounted(() => {
   onAuthStateChanged(auth, async (currentUser) => {
     if (currentUser) {
@@ -79,22 +95,7 @@ onMounted(() => {
         displayName: currentUser.displayName,
         email: currentUser.email,
       };
-
-      try {
-        const fetched = await $fetch("http://localhost/api/tweets");
-        tweets.value = fetched.map((tweet: any) => ({
-          id: tweet.id,
-          userName: tweet.user.name,
-          content: tweet.body,
-          likes: tweet.likes?.length ?? 0,
-          liked: tweet.likes?.some(
-            (like: any) => like.firebase_uid === user.value?.uid
-          ),
-          firebase_uid: tweet.user.firebase_uid,
-        }));
-      } catch (error) {
-        console.error("投稿取得に失敗しました", error);
-      }
+      await fetchTweets(); // 認証後にfetch
     }
   });
 });
@@ -110,38 +111,31 @@ const deleteTweet = async (id: number) => {
         firebase_uid: user.value.uid,
       },
     });
-
     tweets.value = tweets.value.filter((t) => t.id !== id);
   } catch (error) {
     console.error("削除に失敗しました", error);
   }
 };
 
+// いいね処理
 const toggleLike = async (tweet: any) => {
   if (!user.value) return;
 
   try {
-    if (tweet.liked) {
-      await $fetch(`http://localhost/api/tweets/${tweet.id}/like`, {
-        method: "DELETE",
-        body: {
-          firebase_uid: user.value.uid,
-        },
-      });
-      tweet.likes -= 1;
-      tweet.liked = false;
-    } else {
-      await $fetch(`http://localhost/api/tweets/${tweet.id}/like`, {
+    const res = await $fetch(
+      `http://localhost/api/tweets/${tweet.id}/like-toggle`,
+      {
         method: "POST",
         body: {
           firebase_uid: user.value.uid,
         },
-      });
-      tweet.likes += 1;
-      tweet.liked = true;
-    }
+      }
+    );
+
+    tweet.likes = res.likes_count;
+    tweet.liked = res.liked;
   } catch (error) {
-    console.error("いいね処理に失敗しました", error);
+    console.error("いいね切り替えに失敗しました", error);
   }
 };
 </script>

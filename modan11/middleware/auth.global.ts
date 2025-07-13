@@ -1,4 +1,3 @@
-// middleware/auth.global.ts
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 export default defineNuxtRouteMiddleware(async (to) => {
@@ -14,7 +13,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     });
   });
 
-  console.log("[auth.global.ts] user:", user); // ← デバッグ用ログ
+  console.log("[auth.global.ts] user:", user);
 
   if (!user && !["/login", "/register"].includes(to.path)) {
     return navigateTo("/login");

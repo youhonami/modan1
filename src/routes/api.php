@@ -26,11 +26,9 @@ Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
 //新規会員登録機能
 Route::post('/register', [RegisteredUserController::class, 'store']);
-
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-
 Route::post('/firebase-register', [FirebaseAuthController::class, 'register']);
 //シェア機能
 Route::post('/tweets', [TweetController::class, 'store']);
@@ -43,7 +41,6 @@ Route::middleware('api')->group(function () {
     Route::delete('/tweets/{id}/like', [TweetController::class, 'unlike']);
 });
 Route::post('/tweets/{id}/like-toggle', [TweetController::class, 'toggleLike']);
-
 //コメント機能
 Route::get('/tweets/{id}', [TweetController::class, 'show']);
 Route::get('/tweets/{id}/comments', [CommentController::class, 'index']);

@@ -4,7 +4,7 @@ Twitter 風 SNS アプリ
 
 ## 作成した目的
 
-／
+コメントを投稿して、他のユーザーとコミュニケーションを取れるアプリ
 
 ## 機能一覧
 
@@ -25,6 +25,8 @@ Twitter 風 SNS アプリ
 - MySQL8.0.26
 - JavaScript
 - Next.js
+
+／バージョンの記述
 
 ## テーブル設計
 
@@ -110,11 +112,15 @@ php artisan db:seed
 php artisan storage:link
 ```
 
+／JavaScript、ノード js
+
 ## URL
 
 - 開発環境:http://localhost
 - phpMyAdmin:http://localhost:8080/
 - MailHog:http://localhost:8025/
 -
+
+／ファイアーベース、localhost3000
 
 ## 備考

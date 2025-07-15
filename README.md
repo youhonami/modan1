@@ -143,7 +143,3 @@ export default defineNuxtConfig({
 - phpMyAdmin:http://localhost:8080/
 - MailHog:http://localhost:8025/
 - Firebase:https://console.firebase.google.com/
-
-## 備考
-
-test

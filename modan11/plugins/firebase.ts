@@ -1,14 +1,16 @@
 import { initializeApp, getApps } from "firebase/app";
 
 export default defineNuxtPlugin(() => {
+  const config = useRuntimeConfig().public;
+
   const firebaseConfig = {
-    apiKey: "***REMOVED***",
-    authDomain: "modan11.firebaseapp.com",
-    projectId: "modan11",
-    storageBucket: "modan11.appspot.com",
-    messagingSenderId: "717851357087",
-    appId: "1:717851357087:web:eaf720c2fea2510105d7aa",
-    measurementId: "G-SPH2HC9BWT",
+    apiKey: config.firebaseApiKey as string,
+    authDomain: config.firebaseAuthDomain as string,
+    projectId: config.firebaseProjectId as string,
+    storageBucket: config.firebaseStorageBucket as string,
+    messagingSenderId: config.firebaseMessagingSenderId as string,
+    appId: config.firebaseAppId as string,
+    measurementId: config.firebaseMeasurementId as string,
   };
 
   if (getApps().length === 0) {

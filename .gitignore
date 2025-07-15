@@ -28,3 +28,5 @@ docker-compose.override.yml
 .DS_Store
 npm-debug.log
 yarn-error.log
+
+modan1.git/

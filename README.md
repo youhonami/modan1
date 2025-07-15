@@ -20,11 +20,14 @@ Twitter 風 SNS アプリ
 
 ## 使用技術(実行環境)
 
-- PHP7.4.9
+- PHP8.4.8
 - Laravel8.83.29
 - MySQL8.0.26
-- JavaScript
-- Next.js
+- Node Version: v24.3.0
+- Nuxt Version: 3.17.6
+- CLI Version: 3.25.1
+- Nitro Version: 2.11.13
+- firebase@11.10.0
 
 ／バージョンの記述
 
@@ -56,7 +59,7 @@ Twitter 風 SNS アプリ
    ```
 
 2. DockerDesktop アプリを立ち上げる
-3. `docker-compose up -d --build`
+3. `docker compose up -d --build`
 
 ````
 > _Mac の M1・M2 チップの PC の場合、`no matching manifest for linux/arm64/v8 in the manifest list entries`のメッセージが表示されビルドができないことがあります。
@@ -71,7 +74,7 @@ mysql:
 
 **Laravel 環境構築**
 
-1. `docker-compose exec php bash`
+1. `docker compose exec php bash`
 2. `composer install`
    > \_composer install に失敗する場合は、laravel/sail を個別にインストールしてみてください。`composer require laravel/sail --dev`その後`composer install`
 3. 「.env.example」ファイルを 「.env」ファイルに命名を変更。または、新しく.env ファイルを作成
@@ -85,7 +88,6 @@ DB_DATABASE=laravel_db
 DB_USERNAME=laravel_user
 DB_PASSWORD=laravel_pass
 
-MAIL_FROM_ADDRESS=認証メールの送信元となるメールアドレスを入力してください
 ```
 
 5. アプリケーションキーの作成
@@ -112,16 +114,35 @@ php artisan db:seed
 php artisan storage:link
 ```
 
-／JavaScript、ノード js
+9. フロントエンドの設定
+
+```bash
+cd modan11
+npm install
+npm run dev
+```
+
+10. Firebase の設定
+
+- https://console.firebase.google.com/
+- プロジェクトを新規作成
+- コンソールで表示された設定情報を firebaseConfig として保存(plugins/firebase.ts などに記述)
+- nuxt.config.ts にプラグインを登録
+
+```bash
+export default defineNuxtConfig({
+  plugins: ["@/plugins/firebase.ts"],
+});
+```
+
+- Firebase コンソール → Authentication → ログイン方法 に移動し、メール/パスワード認証 → 有効化
 
 ## URL
 
-- 開発環境:http://localhost
+- 開発環境:http://localhost:3000/login
 - phpMyAdmin:http://localhost:8080/
 - MailHog:http://localhost:8025/
--
-
-／ファイアーベース、localhost3000
+- Firebase:https://console.firebase.google.com/
 
 ## 備考
 

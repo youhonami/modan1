@@ -136,6 +136,15 @@ export default defineNuxtConfig({
 ```
 
 - Firebase コンソール → Authentication → ログイン方法 に移動し、メール/パスワード認証 → 有効化
+- modan11 のディレクトリ内に.env ファイルを作成し以下を記述
+
+```bash
+NUXT_PUBLIC_FIREBASE_API_KEY=Firebase の Web APIキー（プロジェクト設定画面で確認）
+NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN=	xxxx.firebaseapp.com（新しいプロジェクトに応じて）
+NUXT_PUBLIC_FIREBASE_PROJECT_ID=	Firebase のプロジェクトID
+NUXT_PUBLIC_FIREBASE_STORAGE_BUCKET=	xxxx.appspot.com（プロジェクトに対応）
+NUXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=	Firebase の送信者ID
+```
 
 ## URL
 
